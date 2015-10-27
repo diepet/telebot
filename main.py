@@ -4,6 +4,7 @@ import logging
 import random
 import urllib
 import urllib2
+import wheels
 
 # for sending images
 from PIL import Image
@@ -107,10 +108,10 @@ class WebhookHandler(webapp2.RequestHandler):
 
         if text.startswith('/'):
             if text == '/start':
-                reply('Bot enabled')
+                reply('Bot abilitato')
                 setEnabled(chat_id, True)
             elif text == '/stop':
-                reply('Bot disabled')
+                reply('Bot disabilitato')
                 setEnabled(chat_id, False)
             elif text == '/image':
                 img = Image.new('RGB', (512, 512))
@@ -121,30 +122,34 @@ class WebhookHandler(webapp2.RequestHandler):
                 img.save(output, 'JPEG')
                 reply(img=output.getvalue())
             else:
-                reply('What command?')
+                reply('Che comando???')
 
         # CUSTOMIZE FROM HERE
 
-        elif 'who are you' in text:
-            reply('telebot starter kit, created by yukuku: https://github.com/yukuku/telebot')
-        elif 'what time' in text:
-            reply('look at the top-right corner of your screen!')
+#        elif 'who are you' in text:
+#            reply('telebot starter kit, created by yukuku: https://github.com/yukuku/telebot')
+#        elif 'what time' in text:
+#            reply('look at the top-right corner of your screen!')
         else:
-            if getEnabled(chat_id):
-                try:
-                    resp1 = json.load(urllib2.urlopen('http://www.simsimi.com/requestChat?lc=en&ft=1.0&req=' + urllib.quote_plus(text.encode('utf-8'))))
-                    back = resp1.get('res')
-                except urllib2.HTTPError, err:
-                    logging.error(err)
-                    back = str(err)
-                if not back:
-                    reply('okay...')
-                elif 'I HAVE NO RESPONSE' in back:
-                    reply('you said something with no meaning')
-                else:
-                    reply(back)
+            wheel = wheels.getfirstwheelfound(text)
+            if wheel:
+                reply("I numeri sulla " + wheel + " da giocare sono " + str(wheels.getnumbers(wheel)))
             else:
-                logging.info('not enabled for chat_id {}'.format(chat_id))
+                if getEnabled(chat_id):
+                    try:
+                        resp1 = json.load(urllib2.urlopen('http://www.simsimi.com/requestChat?lc=en&ft=1.0&req=' + urllib.quote_plus(text.encode('utf-8'))))
+                        back = resp1.get('res')
+                    except urllib2.HTTPError, err:
+                        logging.error(err)
+                        back = str(err)
+                    if not back:
+                        reply('okay...')
+                    elif 'I HAVE NO RESPONSE' in back:
+                        reply('you said something with no meaning')
+                    else:
+                        reply(back)
+                else:
+                    logging.info('not enabled for chat_id {}'.format(chat_id))
 
 
 app = webapp2.WSGIApplication([
