@@ -15,7 +15,7 @@ from google.appengine.api import urlfetch
 from google.appengine.ext import ndb
 import webapp2
 
-TOKEN = 'YOUR_BOT_TOKEN_HERE'
+TOKEN = ''
 
 BASE_URL = 'https://api.telegram.org/bot' + TOKEN + '/'
 
@@ -90,7 +90,7 @@ class WebhookHandler(webapp2.RequestHandler):
                     'chat_id': str(chat_id),
                     'text': msg.encode('utf-8'),
                     'disable_web_page_preview': 'true',
-                    'reply_to_message_id': str(message_id),
+                    #'reply_to_message_id': str(message_id),
                 })).read()
             elif img:
                 resp = multipart.post_multipart(BASE_URL + 'sendPhoto', [
@@ -133,28 +133,30 @@ class WebhookHandler(webapp2.RequestHandler):
         else:
             wheel = wheels.getfirstwheelfound(text)
             if wheel:
-                reply("I numeri sulla " + wheel + " da giocare sono " + str(wheels.getnumbers(wheel)))
+                n = wheels.getnumberstoplay(text)
+                reply("I numeri sulla " + wheel + " da giocare" + wheels.gettextforkindofplay(n) + "sono " + str(wheels.getnumbers(wheel, n)))
             else:
-                if getEnabled(chat_id):
-                    try:
-                        resp1 = json.load(urllib2.urlopen('http://www.simsimi.com/requestChat?lc=en&ft=1.0&req=' + urllib.quote_plus(text.encode('utf-8'))))
-                        back = resp1.get('res')
-                    except urllib2.HTTPError, err:
-                        logging.error(err)
-                        back = str(err)
-                    if not back:
-                        reply('okay...')
-                    elif 'I HAVE NO RESPONSE' in back:
-                        reply('you said something with no meaning')
-                    else:
-                        reply(back)
-                else:
-                    logging.info('not enabled for chat_id {}'.format(chat_id))
+                logging.debug('No operation for text: ' + text)
+#                if getEnabled(chat_id):
+#                    try:
+#                        resp1 = json.load(urllib2.urlopen('http://www.simsimi.com/requestChat?lc=en&ft=1.0&req=' + urllib.quote_plus(text.encode('utf-8'))))
+#                        back = resp1.get('res')
+#                    except urllib2.HTTPError, err:
+#                        logging.error(err)
+#                        back = str(err)
+#                        reply('okay...')
+#                    if not back:
+#                    elif 'I HAVE NO RESPONSE' in back:
+#                        reply('you said something with no meaning')
+#                    else:
+#                        reply(back)
+#                else:
+#                    logging.info('not enabled for chat_id {}'.format(chat_id))
 
 
 app = webapp2.WSGIApplication([
     ('/me', MeHandler),
     ('/updates', GetUpdatesHandler),
     ('/set_webhook', SetWebhookHandler),
-    ('/webhook', WebhookHandler),
+    ('/webhook3', WebhookHandler),
 ], debug=True)

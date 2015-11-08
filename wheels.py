@@ -1,6 +1,7 @@
 from datetime import date
 import datetime
 import random
+import re
 
 wheels = ["ruota di Bari", "ruota di Cagliari", "ruota di Firenze",
 "ruota di Genova", "ruota di Milano", "ruota di Napoli",
@@ -23,17 +24,12 @@ def getseed(wheel) :
     seed = wheel.upper() + "-" + str(year) + "-" + str(weekofyear) + "-" + str(seedday)
     return seed;
 
-def getnumbers(wheel):
-    numbers = []
+def getnumbers(wheel, n):
+    numbers = None
     if wheel.upper() in (w.upper() for w in wheels):
         seed = getseed(wheel)
         random.seed(seed)
-        numbers.append(random.randint(1, 90))
-        numbers.append(random.randint(1, 90))
-        numbers.append(random.randint(1, 90))
-        numbers.append(random.randint(1, 90))
-        numbers.append(random.randint(1, 90))
-        numbers.sort()
+        numbers = getrandomsubsetofnumbers(n)
     return numbers
 
 def getfirstwheelfound(text):
@@ -41,3 +37,36 @@ def getfirstwheelfound(text):
         if (w.upper() in text.upper()):
             return w
     return ""
+
+def getnumberstoplay(text):
+    if re.search('ambo', text, re.IGNORECASE):
+        return 2
+    if re.search('terno', text, re.IGNORECASE):
+        return 3
+    if re.search('quaterna', text, re.IGNORECASE):
+        return 4
+    if re.search('terna', text, re.IGNORECASE):
+        return 3
+    return 5
+
+def gettextforkindofplay(n):
+    if (n == 2):
+        return " per un ambo "
+    if (n == 3):
+        return " per un terno "
+    if (n == 4):
+        return " per una quaterna "
+    return " "
+
+def getrandomsubsetofnumbers(n):
+    count = 0;
+    numbers = []
+    while count != n:
+        current = random.randint(1, 90)
+        if current not in numbers:
+            numbers.append(current)
+            count = count + 1
+    numbers.sort()
+    return numbers
+
+print gettextforkindofplay(5)
